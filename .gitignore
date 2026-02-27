@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Django
+db.sqlite3
+media/
+static/
+
+# Docker
+.env
+
+# IDE
+.vscode/
+.idea/git add .
