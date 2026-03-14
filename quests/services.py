@@ -208,3 +208,41 @@ class QuestService:
             'by_status': by_status,
             'by_difficulty': by_difficulty,
         }
+
+    @staticmethod
+    def create_quest(data: dict, owner=None) -> Quest:
+        data['status'] = Quest.Status.DRAFT
+
+        if owner:
+            data['owner'] = owner
+
+        if data.get('difficulty') == Quest.Difficulty.LEGENDARY:
+            if data.get('reward_gold', 0) < 100:
+                data['reward_gold'] = 100
+            if data.get('reward_experience', 0) < 100:
+                data['reward_experience'] = 100
+
+        quest = Quest.objects.create(**data)
+        return quest
+
+    @staticmethod
+    def get_quests_list(
+            page: int = 1,
+            limit: int = 10,
+            ordering: str = '-created_at',
+            search: str = '',
+            status: str = None,
+            difficulty: str = None,
+            owner=None,  # Добавь параметр
+    ) -> dict:
+        queryset = Quest.objects.all()
+
+        # Фильтр по владельцу
+        if owner:
+            queryset = queryset.filter(owner=owner)
+
+        if search:
+            queryset = queryset.filter(
+                Q(title__icontains=search) |
+                Q(description__icontains=search)
+            )

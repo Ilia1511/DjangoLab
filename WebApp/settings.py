@@ -11,8 +11,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'unsafe-secret-key')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']  # для разработки, в продакшене ограничьте
+YANDEX_CLIENT_ID = os.getenv('YANDEX_CLIENT_ID')
+YANDEX_CLIENT_SECRET = os.getenv('YANDEX_CLIENT_SECRET')
+YANDEX_REDIRECT_URI = 'http://localhost:8000/api/auth/yandex/callback/'
 
+ALLOWED_HOSTS = ['*']  # для разработки, в продакшене ограничьте
+AUTH_USER_MODEL = 'users.User'
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.yandex.YandexOAuth2',  # Бэкенд Яндекса
+    'django.contrib.auth.backends.ModelBackend',
+)
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -22,6 +30,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'quests',
     'rest_framework',
+    'social_django',
+    'users',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',  # для отзыва токенов
 ]
 
 REST_FRAMEWORK = {
@@ -30,21 +42,36 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',  # убрать в продакшене
     ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'users.authentication.JWTCookieAuthentication',
+
+
+    ],
 }
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'sensitive_data': {
+            '()': 'WebApp.log_filters.SensitiveDataFilter',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'filters': ['sensitive_data'],
         },
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
         },
         'quests': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'users': {
             'handlers': ['console'],
             'level': 'DEBUG',
         },
@@ -57,10 +84,20 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'users.middleware.JWTAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'SIGNING_KEY': os.getenv('JWT_SECRET_KEY', SECRET_KEY),
+}
 
 ROOT_URLCONF = 'WebApp.urls'
 WSGI_APPLICATION = 'WebApp.wsgi.application'
@@ -76,11 +113,16 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
 ]
 
+
+# Куда перенаправить пользователя после успешного входа
+LOGIN_REDIRECT_URL = '/dashboard/'
 
 # ===== ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ =====
 DATABASES = {

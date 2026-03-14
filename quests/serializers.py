@@ -177,3 +177,23 @@ class PaginatedQuestResponseDTO(serializers.Serializer):
     limit = serializers.IntegerField()
     total_pages = serializers.IntegerField()
     results = QuestResponseDTO(many=True)
+
+class QuestResponseDTO(serializers.ModelSerializer):
+    is_deleted = serializers.BooleanField(read_only=True)
+    owner_username = serializers.CharField(source='owner.username', read_only=True, default=None)
+
+    class Meta:
+        model = Quest
+        fields = [
+            'id',
+            'title',
+            'description',
+            'status',
+            'difficulty',
+            'reward_gold',
+            'reward_experience',
+            'owner_username',
+            'created_at',
+            'updated_at',
+            'is_deleted',
+        ]

@@ -3,3 +3,7 @@ psycopg2-binary
 dj-database-url
 djangorestframework
 python-dotenv==1.0.0
+social-auth-app-django
+djangorestframework-simplejwt
+PyJWT
+requests

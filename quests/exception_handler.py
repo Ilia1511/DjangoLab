@@ -8,36 +8,30 @@ logger = logging.getLogger(__name__)
 
 
 def custom_exception_handler(exc, context):
-    """
-    Глобальный обработчик ошибок.
-    Никогда не возвращает стек-трейсы пользователю.
-    """
-
-    # Сначала вызываем стандартный обработчик DRF
     response = exception_handler(exc, context)
 
-    # Если DRF обработал (ValidationError, AuthError и т.д.)
     if response is not None:
         custom_response = {
             'error': {
                 'status': response.status_code,
                 'message': _get_error_message(response),
-                'details': response.data,
+                'details': _sanitize_details(response.data),
             }
         }
         response.data = custom_response
         return response
 
-    # Необработанные исключения — ловим сами
-    # Логируем полный стек-трейс (для разработчиков)
-    logger.error(f'Unhandled exception: {exc}', exc_info=True)
+    # Необработанные исключения
+    logger.error(
+        f'Unhandled exception in {context.get("view", "unknown")}: {type(exc).__name__}',
+        exc_info=True
+    )
 
-    # Возвращаем пользователю безопасное сообщение
     return Response(
         {
             'error': {
                 'status': 500,
-                'message': 'Внутренняя ошибка сервера',
+                'message': 'Internal server error',
                 'details': None,
             }
         },
@@ -46,14 +40,26 @@ def custom_exception_handler(exc, context):
 
 
 def _get_error_message(response):
-    """Формирует человекочитаемое сообщение об ошибке"""
     status_messages = {
-        400: 'Неверный формат данных',
-        401: 'Не авторизован',
-        403: 'Доступ запрещён',
-        404: 'Ресурс не найден',
-        405: 'Метод не разрешён',
-        409: 'Конфликт данных',
-        500: 'Внутренняя ошибка сервера',
+        400: 'Bad request',
+        401: 'Unauthorized',
+        403: 'Forbidden',
+        404: 'Not found',
+        405: 'Method not allowed',
+        409: 'Conflict',
+        500: 'Internal server error',
     }
-    return status_messages.get(response.status_code, 'Ошибка')
+    return status_messages.get(response.status_code, 'Error')
+
+
+def _sanitize_details(data):
+    """Убираем чувствительные данные из ответа"""
+    if isinstance(data, dict):
+        sanitized = {}
+        sensitive_keys = {'password', 'token', 'secret', 'hash', 'salt'}
+        for key, value in data.items():
+            if any(s in key.lower() for s in sensitive_keys):
+                continue
+            sanitized[key] = _sanitize_details(value)
+        return sanitized
+    return data

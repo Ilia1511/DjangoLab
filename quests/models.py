@@ -2,6 +2,7 @@
 import uuid
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 
 
 class QuestQuerySet(models.QuerySet):
@@ -52,6 +53,15 @@ class QuestManager(models.Manager):
 
 
 class Quest(models.Model):
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='quests',
+        null=True,          # Временно, для старых записей
+        blank=True,
+        verbose_name='Владелец'
+    )
 
     class Status(models.TextChoices):
         DRAFT = 'draft', 'Черновик'

@@ -26,6 +26,15 @@ DB_PORT=5432
 
 SECRET_KEY=your-secret-key-here-change-in-production
 DEBUG=True
+
+JWT_ACCESS_SECRET=super_secret_access_key_change_in_prod
+JWT_REFRESH_SECRET=super_secret_refresh_key_change_in_prod
+JWT_ACCESS_EXPIRATION=15m
+JWT_REFRESH_EXPIRATION=7d
+
+CLIENT_ID=your_client_id
+CLIENT_SECRET=your_client_secret
+CALLBACK_URL=http://localhost:4200/auth/yandex/callback
 ===============================
 7.API Документация
 
