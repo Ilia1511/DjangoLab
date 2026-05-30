@@ -15,8 +15,8 @@ urlpatterns = [
     path('auth/logout-all/', views.LogoutAllView.as_view()),
 
     # OAuth
-    path('auth/oauth/yandex/', views.YandexLoginView.as_view()),
-    path('auth/oauth/yandex/callback/', views.YandexCallbackView.as_view()),
+    path('auth/yandex/', views.YandexLoginView.as_view()),
+    path('auth/yandex/callback/', views.YandexCallbackView.as_view()),
 
     # Сброс пароля
     path('auth/forgot-password/', views.ForgotPasswordView.as_view()),
@@ -24,4 +24,7 @@ urlpatterns = [
 
     # Смена пароля
     path('auth/change-password/', views.ChangePasswordView.as_view()),
+
+    # Profile
+    path('profile/', views.ProfileView.as_view()),
 ]

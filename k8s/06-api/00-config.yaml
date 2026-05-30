@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: wp-labs
+data:
+  DB_NAME: wp_labs
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  CACHE_TTL_DEFAULT: "300"
+  MINIO_ENDPOINT: minio:9000
+  MINIO_BUCKET: wp-labs-files
+  MINIO_USE_SSL: "false"
+  MAX_FILE_SIZE: "10485760"
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_EXCHANGE: app.events
+  RABBITMQ_DLX: app.dlx
+  QUEUE_USER_REGISTERED: wp.auth.user.registered
+  SMTP_HOST: smtp.gmail.com
+  SMTP_PORT: "465"
+  SMTP_SECURE: "true"
+  NODE_ENV: production
+  SWAGGER_ENABLED: "false"
+  DEBUG: "False"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: api-secret
+  namespace: wp-labs
+type: Opaque
+stringData:
+  SECRET_KEY: change-me-in-production
+  JWT_SECRET_KEY: change-me-in-production
+  JWT_ACCESS_SECRET: change-me-in-production
+  JWT_REFRESH_SECRET: change-me-in-production
+  MONGO_URI: mongodb://student:student_secure_password@mongodb:27017/wp_labs?authSource=admin
+  REDIS_PASSWORD: redis_secure_password_change_in_prod
+  MINIO_ACCESS_KEY: minio_admin
+  MINIO_SECRET_KEY: minio_secure_password_change_in_prod
+  RABBITMQ_USER: student
+  RABBITMQ_PASS: student_secure_rabbit_pass_change_in_prod
+  SMTP_USER: your_email@gmail.com
+  SMTP_PASS: your_google_app_password
+  SMTP_FROM: your_email@gmail.com

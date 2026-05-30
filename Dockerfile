@@ -4,6 +4,8 @@ FROM python:3.13
 # Устанавливаем переменные окружения, чтобы Python не создавал .pyc и выводил логи сразу
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV NODE_ENV=production
+ENV SWAGGER_ENABLED=false
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
@@ -11,7 +13,6 @@ WORKDIR /app
 # Устанавливаем зависимости системы (нужны для сборки некоторых библиотек Python)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Устанавливаем зависимости Python
